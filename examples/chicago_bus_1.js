@@ -3,9 +3,7 @@
 "use strict";
 var bus_bucket = bucket("556391a7791aa76a07f0c283"); // Chicago - Bus #1
 
-function random_true_false() {
-    return (_.random(true, false) ? true : false);
-}
+const TASK_INTERVAL = 2; // minute
 
 const LOCATIONS = [{
     "id": 1,
@@ -107,7 +105,25 @@ function get_inc_id(cb) {
     });
 }
 
-async.parallel({"serie": get_serie, "id": get_inc_id}, function (err, result) {
+function get_fuel(cb) {
+    bus_bucket("fuel_level").query("last_value").run(function (err, result) {
+        if (err) {
+            return cb(err);
+        }
+
+        result = result[0] || {};
+        let fuel = 100;
+
+        if (result.value <= 5) {
+            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 12); // Assuming that the fuel tank is enough for 12hours
+            fuel = Number(fuel) - how_much_spend;
+        }
+
+        cb(null, fuel);
+    });
+}
+
+async.parallel({"serie": get_serie, "id": get_inc_id, "fuel": get_fuel}, function (err, result) {
     if (err) {
         return console.log(err);
     }
@@ -116,11 +132,18 @@ async.parallel({"serie": get_serie, "id": get_inc_id}, function (err, result) {
 
     let location      = {"location": bus.location, "serie": result.serie};
     let speed         = {"value": _.random(0, bus.max_speed), "unit": "mph", "serie": result.serie};
+    let fuel          = {"value": result.fuel, "unit": "%", "serie": result.serie};
     let update_at     = {"value": moment_tz(new Date()).tz("America/Chicago").format("hh:mm A - z"), "serie": result.serie};
     let break_pressed = {"value": random_true_false(), "serie": result.serie};
 
     bus_bucket("location").insert(location);
     bus_bucket("speed").insert(speed);
+    bus_bucket("fuel_level").insert(fuel);
     bus_bucket("update_at").insert(update_at);
     if (bus.break) { bus_bucket("break_pressed").insert(break_pressed); }
 });
+
+// Helpers
+function random_true_false() {
+    return (_.random(true, false) ? true : false);
+}
