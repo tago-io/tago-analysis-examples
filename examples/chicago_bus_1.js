@@ -114,9 +114,9 @@ function get_fuel(cb) {
         result = result[0] || {};
         let fuel = 100;
 
-        if (result.value <= 5) {
+        if (result.value >= 5) {
             let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 12); // Assuming that the fuel tank is enough for 12hours
-            fuel = Number(fuel) - how_much_spend;
+            fuel = Number(result.value) - how_much_spend;
         }
 
         cb(null, fuel);
