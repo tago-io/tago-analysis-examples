@@ -10,73 +10,59 @@ function random_true_false() {
 const LOCATIONS = [{
     "id": 1,
     "location": `41.87${_.random(7000, 9000)}, -87.624205`,
-    "max_speed": 45,
-    "break": random_true_false()
+    "max_speed": 45
 }, {
     "id": 2,
     "location": `41.88${_.random(1000, 4000)}, -87.624205`,
-    "max_speed": 0,
-    "break": random_true_false()
+    "max_speed": 0
 }, {
     "id": 3,
     "location": `41.88${_.random(4000, 8000)}, -87.624448`,
-    "max_speed": 20,
-    "break": random_true_false()
+    "max_speed": 20
 }, {
     "id": 4,
     "location": "41.888330, -87.624792",
-    "max_speed": 3,
-    "break": random_true_false()
+    "max_speed": 3
 }, {
     "id": 5,
     "location": "41.888286, -87.625221",
-    "max_speed": 10,
-    "break": random_true_false()
+    "max_speed": 10
 }, {
     "id": 6,
     "location": "41.887392, -87.626122",
-    "max_speed": 8,
-    "break": random_true_false()
+    "max_speed": 8
 }, {
     "id": 7,
     "location": `41.886912, -87.6${_.random(28000, 35000)}`,
-    "max_speed": 23,
-    "break": random_true_false()
+    "max_speed": 23
 }, {
     "id": 8,
     "location": "41.886437, -87.636303",
-    "max_speed": 25,
-    "break": random_true_false()
+    "max_speed": 25
 }, {
     "id": 9,
     "location": "41.885710, -87.636969",
-    "max_speed": 3,
-    "break": random_true_false()
+    "max_speed": 3
 }, {
     "id": 10,
     "location": `41.88${_.random(0, 5224)}, -87.637054`,
-    "max_speed": 40,
-    "break": random_true_false()
+    "max_speed": 40
 }, {
     "id": 11,
     "location": `41.87${_.random(8000, 9999)}, -87.637054`,
-    "max_speed": 40,
-    "break": random_true_false()
+    "max_speed": 40
 }, {
     "id": 12,
     "location": "41.875726, -87.635971",
-    "max_speed": 50,
-    "break": random_true_false()
+    "max_speed": 50
 }, {
     "id": 13,
     "location": `41.875569, -87.63${_.random(0, 5871)}`,
-    "max_speed": 50,
-    "break": random_true_false()
+    "max_speed": 50
 }, {
     "id": 14,
     "location": `41.875697, -87.62${_.random(4200, 8997)}`,
-    "max_speed": 13,
-    "break": random_true_false()
+    "max_speed": 13
 }];
 
 function get_serie(cb) {
@@ -131,7 +117,7 @@ async.parallel({"serie": get_serie, "id": get_inc_id}, function (err, result) {
     let location      = {"location": bus.location, "serie": result.serie};
     let speed         = {"value": _.random(0, bus.max_speed), "unit": "mph", "serie": result.serie};
     let update_at     = {"value": moment_tz(new Date()).tz("America/Chicago").format("hh:mm A - z"), "serie": result.serie};
-    let break_pressed = {"value": bus.break, "serie": result.serie};
+    let break_pressed = {"value": random_true_false(), "serie": result.serie};
 
     bus_bucket("location").insert(location);
     bus_bucket("speed").insert(speed);
