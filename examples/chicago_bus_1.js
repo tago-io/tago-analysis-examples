@@ -39,58 +39,43 @@ const LOCATIONS = [{
     "break": random_true_false()
 }, {
     "id": 7,
-    "location": "41.886912, -87.628783",
+    "location": `41.886912, -87.6${_.random(28000, 35000)}`,
     "max_speed": 23,
     "break": random_true_false()
 }, {
     "id": 8,
-    "location": "41.886912, -87.635091",
+    "location": "41.886437, -87.636303",
     "max_speed": 25,
     "break": random_true_false()
 }, {
     "id": 9,
-    "location": "41.885986, -87.636679",
+    "location": "41.885710, -87.636969",
     "max_speed": 3,
     "break": random_true_false()
 }, {
     "id": 10,
-    "location": "41.882344, -87.636936",
+    "location": `41.88${_.random(0, 5224)}, -87.637054`,
     "max_speed": 40,
     "break": random_true_false()
 }, {
     "id": 11,
-    "location": "41.877838, -87.636679",
+    "location": `41.87${_.random(8000, 9999)}, -87.637054`,
     "max_speed": 40,
     "break": random_true_false()
 }, {
     "id": 12,
-    "location": "41.875538, -87.635606",
+    "location": "41.875726, -87.635971",
     "max_speed": 50,
     "break": random_true_false()
 }, {
     "id": 13,
-    "location": "41.875569, -87.630842",
+    "location": `41.875569, -87.63${_.random(0, 5871)}`,
     "max_speed": 50,
     "break": random_true_false()
 }, {
     "id": 14,
-    "location": "41.875697, -87.628997",
-    "max_speed": 10,
-    "break": random_true_false()
-}, {
-    "id": 15,
-    "location": "41.875693, -87.626132",
-    "max_speed": 5,
-    "break": random_true_false()
-}, {
-    "id": 16,
-    "location": "41.876340, -87.624190",
-    "max_speed": 30,
-    "break": random_true_false()
-}, {
-    "id": 17,
-    "location": "41.877882, -87.624212",
-    "max_speed": 10,
+    "location": `41.875697, -87.62${_.random(4200, 8997)}`,
+    "max_speed": 13,
     "break": random_true_false()
 }];
 
@@ -143,10 +128,13 @@ async.parallel({"serie": get_serie, "id": get_inc_id}, function (err, result) {
 
     let bus = _.findWhere(LOCATIONS, {"id": result.id});
 
-    bus_bucket("location").insert({"location": bus.location, "serie": result.serie});
-    bus_bucket("speed").insert({"value": _.random(0, bus.max_speed), "serie": result.serie});
-    bus_bucket("update_at").insert({"value": moment_tz(new Date()).tz("America/Chicago").format("hh:mm A - z"), "serie": result.serie});
-    if (bus.break) {
-        bus_bucket("break_pressed").insert({"value": bus.break, "serie": result.serie});
-    }
+    let location      = {"location": bus.location, "serie": result.serie};
+    let speed         = {"value": _.random(0, bus.max_speed), "unit": "mph", "serie": result.serie};
+    let update_at     = {"value": moment_tz(new Date()).tz("America/Chicago").format("hh:mm A - z"), "serie": result.serie};
+    let break_pressed = {"value": bus.break, "serie": result.serie};
+
+    bus_bucket("location").insert(location);
+    bus_bucket("speed").insert(speed);
+    bus_bucket("update_at").insert(update_at);
+    if (bus.break) { bus_bucket("break_pressed").insert(break_pressed); }
 });
