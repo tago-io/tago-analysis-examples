@@ -8,7 +8,7 @@ weather_service.name('Chicago').current(function (err, result) {
 
     wheater_bucket("temp_f").insert({'value': result.temp_f, 'unit': 'F'});
     wheater_bucket("temp_c").insert({'value': result.temp_c, 'unit': 'C'});
-    wheater_bucket("weather_string").insert({'value': result.weather_string});
+    wheater_bucket("weather_string").insert({'value': result.weather});
     wheater_bucket("UV").insert({'value': result.UV});
     wheater_bucket("wind_kph").insert({'value': result.wind_kph, 'unit': 'kph'});
     wheater_bucket("wind_mph").insert({'value': result.wind_mph, 'unit': 'mph'});
