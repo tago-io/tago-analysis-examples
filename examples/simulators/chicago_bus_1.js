@@ -52,14 +52,26 @@ const LOCATIONS = [{
     "max_speed": 40
 }, {
     "id": 12,
-    "location": "41.875726, -87.635971",
-    "max_speed": 50
+    "location": "41.876816, -87.636808",
+    "max_speed": 15
 }, {
     "id": 13,
-    "location": `41.875569, -87.63${_.random(0, 5871)}`,
-    "max_speed": 50
+    "location": `41.876808, -87.63${_.random(4000, 5871)}`,
+    "max_speed": 15
 }, {
     "id": 14,
+    "location": `41.87${_.random(55700, 6815)}, -87.633713`,
+    "max_speed": 15
+}, {
+    "id": 15,
+    "location": "41.875501, -87.633624",
+    "max_speed": 15
+}, {
+    "id": 16,
+    "location": `41.875569, -87.63${_.random(0, 3271)}`,
+    "max_speed": 50
+}, {
+    "id": 17,
     "location": `41.875697, -87.62${_.random(4200, 8997)}`,
     "max_speed": 13
 }];
@@ -126,7 +138,7 @@ function stops_fuel_station(cb) {
     let start_date = new moment_tz().tz("America/Chicago").startOf('day')._d;
     let end_date   = new moment_tz().tz("America/Chicago").endOf('day')._d;
 
-    bus_bucket("stop_fuel_station").qty(1).start_date(start_date).end_date(end_date).run(function (err, result) {
+    bus_bucket("stops_fuel_station").qty(1).start_date(start_date).end_date(end_date).run(function (err, result) {
         if (err) {
             return cb(err);
         }
@@ -147,9 +159,9 @@ function get_trip_odometer(cb) {
         result = result[0] || {};
         let miles = 0;
 
-        if (result.value) {
+        if (result) {
             let how_much = (ALL_ROUTE_MILES/LOCATIONS.length);
-            miles = Number(result.value) + how_much;
+            miles = (Number(result.value) || 0) + how_much;
         }
 
         cb(null, miles);
