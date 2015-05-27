@@ -4,6 +4,7 @@
 var bus_bucket = bucket("556391a7791aa76a07f0c283"); // Chicago - Bus #1
 
 const TASK_INTERVAL = 2; // minute
+const ALL_ROUTE_MILES = 3.2; // miles
 
 const LOCATIONS = [{
     "id": 1,
@@ -77,7 +78,6 @@ function get_serie(cb) {
         }
 
         serie += 1;
-        bus_bucket("serie").insert({"value": serie});
 
         cb(null, serie);
     });
@@ -99,7 +99,6 @@ function get_inc_id(cb) {
         }
 
         id += 1;
-        bus_bucket("id").insert({"value": id});
 
         cb(null, id);
     });
@@ -115,32 +114,73 @@ function get_fuel(cb) {
         let fuel = 100;
 
         if (result.value >= 5) {
-            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 12); // Assuming that the fuel tank is enough for 12hours
-            fuel = Number(result.value) - how_much_spend;
+            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 6);
+            fuel = Number(result.value) - (_.random(0, how_much_spend));
         }
 
         cb(null, fuel);
     });
 }
 
-async.parallel({"serie": get_serie, "id": get_inc_id, "fuel": get_fuel}, function (err, result) {
+function stops_fuel_station(cb) {
+    let start_date = new moment_tz().tz("America/Chicago").startOf('day')._d;
+    let end_date   = new moment_tz().tz("America/Chicago").endOf('day')._d;
+
+    bus_bucket("stop_fuel_station").qty(1).start_date(start_date).end_date(end_date).run(function (err, result) {
+        if (err) {
+            return cb(err);
+        }
+
+        result = result[0] || {};
+        let stops = result.value || 0;
+
+        cb(null, stops);
+    });
+}
+
+function get_trip_odometer(cb) {
+    bus_bucket("trip_odometer").query("last_value").run(function (err, result) {
+        if (err) {
+            return cb(err);
+        }
+
+        result = result[0] || {};
+        let miles = 0;
+
+        if (result.value) {
+            let how_much = (ALL_ROUTE_MILES/LOCATIONS.length);
+            miles = Number(result.value) + how_much;
+        }
+
+        cb(null, miles);
+    });
+}
+
+let functions = {"serie": get_serie, "id": get_inc_id, "fuel": get_fuel, "stops_fuel_station": stops_fuel_station, "trip_odometer": get_trip_odometer};
+async.parallel(functions, function (err, result) {
     if (err) {
         return console.log(err);
     }
 
+    let insert = function (vari, object_vari) {
+        bus_bucket(vari).insert(object_vari);
+    };
+
+    // Bus Prop
     let bus = _.findWhere(LOCATIONS, {"id": result.id});
+    let stop_fuel_value = (result.fuel === 100 ? (result.stops_fuel_station + 1) : result.stops_fuel_station);
 
-    let location      = {"location": bus.location, "serie": result.serie};
-    let speed         = {"value": _.random(0, bus.max_speed), "unit": "mph", "serie": result.serie};
-    let fuel          = {"value": result.fuel, "unit": "%", "serie": result.serie};
-    let update_at     = {"value": moment_tz(new Date()).tz("America/Chicago").format("hh:mm A - z"), "serie": result.serie};
-    let break_pressed = {"value": random_true_false(), "serie": result.serie};
+    insert("location",           {"location": bus.location, "serie": result.serie});
+    insert("break_pressed",      {"value": random_true_false(), "serie": result.serie});
+    insert("stops_fuel_station", {"value": stop_fuel_value, "serie": result.serie});
+    insert("fuel_level",         {"value": result.fuel, "unit": "%", "serie": result.serie});
+    insert("speed",              {"value": _.random(0, bus.max_speed), "unit": "mph", "serie": result.serie});
+    insert("update_at",          {"value": moment_tz().tz("America/Chicago").format("hh:mm A - z"), "serie": result.serie});
+    insert("trip_odometer",      {"value": result.trip_odometer, "serie": result.serie});
 
-    bus_bucket("location").insert(location);
-    bus_bucket("speed").insert(speed);
-    bus_bucket("fuel_level").insert(fuel);
-    bus_bucket("update_at").insert(update_at);
-    if (bus.break) { bus_bucket("break_pressed").insert(break_pressed); }
+    // Tago Analysis
+    insert("id",    {"value": result.id});
+    insert("serie", {"value": result.serie});
 });
 
 // Helpers
