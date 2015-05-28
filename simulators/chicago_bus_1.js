@@ -60,7 +60,7 @@ const LOCATIONS = [{
     "max_speed": 15
 }, {
     "id": 14,
-    "location": `41.87${_.random(55700, 6815)}, -87.633713`,
+    "location": `41.87${_.random(5570, 6815)}, -87.633713`,
     "max_speed": 15
 }, {
     "id": 15,
@@ -126,7 +126,7 @@ function get_fuel(cb) {
         let fuel = 100;
 
         if (result.value >= 5) {
-            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 6);
+            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 20);
             fuel = Number(result.value) - (_.random(0, how_much_spend));
         }
 

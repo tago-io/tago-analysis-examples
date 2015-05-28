@@ -102,7 +102,7 @@ function get_fuel(cb) {
         let fuel = 100;
 
         if (result.value >= 5) {
-            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 6);
+            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 20);
             fuel = Number(result.value) - (_.random(0, how_much_spend));
         }
 
