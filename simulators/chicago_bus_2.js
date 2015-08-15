@@ -8,47 +8,47 @@ const ALL_ROUTE_MILES = 2.3; // miles
 
 const LOCATIONS = [{
     "id": 1,
-    "location": `41.876919, -87.6${_.random(27660, 34800)}`,
+    "location": {"lat": 41.876919, "lng": Number(`-87.6${_.random(27660, 34800)}`)},
     "max_speed": 45
 }, {
     "id": 2,
-    "location": `41.876851, -87.635176`,
+    "location": {"lat": 41.876851, "lng": -87.635176},
     "max_speed": 5
 }, {
     "id": 3,
-    "location": `41.87${_.random(6955, 8955)}, -87.635176`,
+    "location": {"lat": Number(`41.87${_.random(6955, 8955)}`), "lng": -87.635176},
     "max_speed": 20
 }, {
     "id": 4,
-    "location": `41.87${_.random(8955, 9999)}, -87.635176`,
+    "location": {"lat": Number(`41.87${_.random(8955, 9999)}`), "lng": -87.635176},
     "max_speed": 20
 }, {
     "id": 5,
-    "location": `41.88${_.random(0, 5500)}, -87.635376`,
+    "location": {"lat": Number(`41.88${_.random(0, 5500)}`), "lng": -87.635376},
     "max_speed": 20
 }, {
     "id": 6,
-    "location": `41.885714, -87.635363`,
+    "location": {"lat": 41.885714, "lng": -87.635363},
     "max_speed": 30
 }, {
     "id": 7,
-    "location": `41.885714, -87.63${_.random(1999, 5363)}`,
+    "location": {"lat": 41.885714, "lng": Number(`-87.63${_.random(1999, 5363)}`)},
     "max_speed": 15
 }, {
     "id": 8,
-    "location": `41.885714, -87.62${_.random(7999, 9999)}`,
+    "location": {"lat": 41.885714, "lng": Number(`-87.62${_.random(7999, 9999)}`)},
     "max_speed": 20
 }, {
     "id": 9,
-    "location": `41.885610, -87.627956`,
+    "location": {"lat": 41.885610, "lng": -87.627956},
     "max_speed": 5
 }, {
     "id": 10,
-    "location": `41.88${_.random(0, 5610)}, -87.627956`,
+    "location": {"lat": Number(`41.88${_.random(0, 5610)}`), "lng": -87.627956},
     "max_speed": 20
 }, {
     "id": 11,
-    "location": `41.87${_.random(6999, 9999)}, -87.627720`,
+    "location": {"lat": Number(`41.87${_.random(6999, 9999)}`), "lng": -87.627720},
     "max_speed": 20
 }];
 
@@ -102,7 +102,7 @@ function get_fuel(cb) {
         let fuel = 100;
 
         if (result.value >= 5) {
-            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 20);
+            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 45);
             fuel = Number(result.value) - (_.random(0, how_much_spend));
         }
 
@@ -157,6 +157,7 @@ async.parallel(functions, function (err, result) {
     // Bus Prop
     let bus = _.findWhere(LOCATIONS, {"id": result.id});
     let stop_fuel_value = (result.fuel === 100 ? (result.stops_fuel_station + 1) : result.stops_fuel_station);
+    let trip_odometer_adjusted = result.trip_odometer.toFixed(1);
 
     insert("location",           {"location": bus.location, "serie": result.serie});
     insert("break_pressed",      {"value": random_true_false(), "serie": result.serie});
@@ -164,7 +165,7 @@ async.parallel(functions, function (err, result) {
     insert("fuel_level",         {"value": result.fuel, "unit": "%", "serie": result.serie});
     insert("speed",              {"value": _.random(0, bus.max_speed), "unit": "mph", "serie": result.serie});
     insert("update_at",          {"value": moment_tz().tz("America/Chicago").format("hh:mm A - z"), "serie": result.serie});
-    insert("trip_odometer",      {"value": result.trip_odometer, "serie": result.serie});
+    insert("trip_odometer",      {"value": trip_odometer_adjusted, "serie": result.serie});
 
     // Tago Analysis
     insert("id",    {"value": result.id});

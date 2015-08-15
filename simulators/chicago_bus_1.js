@@ -8,71 +8,71 @@ const ALL_ROUTE_MILES = 3.2; // miles
 
 const LOCATIONS = [{
     "id": 1,
-    "location": `41.87${_.random(7000, 9000)}, -87.624205`,
+    "location": {"lat": Number(`41.87${_.random(7000, 9000)}`), lng: -87.624205},
     "max_speed": 45
 }, {
     "id": 2,
-    "location": `41.88${_.random(1000, 4000)}, -87.624205`,
+    "location": {"lat": Number(`41.88${_.random(1000, 4000)}`), lng: -87.624205},
     "max_speed": 0
 }, {
     "id": 3,
-    "location": `41.88${_.random(4000, 8000)}, -87.624448`,
+    "location": {"lat": Number(`41.88${_.random(4000, 8000)}`), lng: -87.624448},
     "max_speed": 20
 }, {
     "id": 4,
-    "location": "41.888330, -87.624792",
+    "location": {"lat": 41.888330, "lng": -87.624792},
     "max_speed": 3
 }, {
     "id": 5,
-    "location": "41.888286, -87.625221",
+    "location": {"lat": 41.888286, "lng": -87.625221},
     "max_speed": 10
 }, {
     "id": 6,
-    "location": "41.887392, -87.626122",
+    "location": {"lat": 41.887392, "lng": -87.626122},
     "max_speed": 8
 }, {
     "id": 7,
-    "location": `41.886912, -87.6${_.random(28000, 35000)}`,
+    "location": {"lat": 41.886912, lng: Number(`-87.6${_.random(28000, 35000)}`)},
     "max_speed": 23
 }, {
     "id": 8,
-    "location": "41.886437, -87.636303",
+    "location": {"lat": 41.886437, "lng": -87.636303},
     "max_speed": 25
 }, {
     "id": 9,
-    "location": "41.885710, -87.636969",
+    "location": {"lat": 41.885710, "lng": -87.636969},
     "max_speed": 3
 }, {
     "id": 10,
-    "location": `41.88${_.random(0, 5224)}, -87.637054`,
+    "location": {"lat": Number(`41.88${_.random(0, 5224)}`), lng: -87.637054},
     "max_speed": 40
 }, {
     "id": 11,
-    "location": `41.87${_.random(8000, 9999)}, -87.637054`,
+    "location": {"lat": Number(`41.87${_.random(8000, 9999)}`), lng: -87.637054},
     "max_speed": 40
 }, {
     "id": 12,
-    "location": "41.876816, -87.636808",
+    "location": {"lat": 41.876816, "lng": -87.636808},
     "max_speed": 15
 }, {
     "id": 13,
-    "location": `41.876808, -87.63${_.random(4000, 5871)}`,
+    "location": {"lat": 41.876808, lng: Number(`-87.63${_.random(4000, 5871)}`)},
     "max_speed": 15
 }, {
     "id": 14,
-    "location": `41.87${_.random(5570, 6815)}, -87.633713`,
+    "location": {"lat": Number(`41.87${_.random(5570, 6815)}`), lng: -87.633713},
     "max_speed": 15
 }, {
     "id": 15,
-    "location": "41.875501, -87.633624",
+    "location": {"lat": 41.875501, "lng": -87.633624},
     "max_speed": 15
 }, {
     "id": 16,
-    "location": `41.875569, -87.63${_.random(0, 3271)}`,
+    "location": {"lat": 41.875569, lng: Number(`-87.63${_.random(0, 3271)}`)},
     "max_speed": 50
 }, {
     "id": 17,
-    "location": `41.875697, -87.62${_.random(4200, 8997)}`,
+    "location": {"lat": 41.875697, lng: Number(`-87.62${_.random(4200, 8997)}`)},
     "max_speed": 13
 }];
 
@@ -126,7 +126,7 @@ function get_fuel(cb) {
         let fuel = 100;
 
         if (result.value >= 5) {
-            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 20);
+            let how_much_spend = ((TASK_INTERVAL*LOCATIONS.length) / 45);
             fuel = Number(result.value) - (_.random(0, how_much_spend));
         }
 
@@ -181,6 +181,7 @@ async.parallel(functions, function (err, result) {
     // Bus Prop
     let bus = _.findWhere(LOCATIONS, {"id": result.id});
     let stop_fuel_value = (result.fuel === 100 ? (result.stops_fuel_station + 1) : result.stops_fuel_station);
+    let trip_odometer_adjusted = result.trip_odometer.toFixed(1);
 
     insert("location",           {"location": bus.location, "serie": result.serie});
     insert("break_pressed",      {"value": random_true_false(), "serie": result.serie});
@@ -188,7 +189,7 @@ async.parallel(functions, function (err, result) {
     insert("fuel_level",         {"value": result.fuel, "unit": "%", "serie": result.serie});
     insert("speed",              {"value": _.random(0, bus.max_speed), "unit": "mph", "serie": result.serie});
     insert("update_at",          {"value": moment_tz().tz("America/Chicago").format("hh:mm A - z"), "serie": result.serie});
-    insert("trip_odometer",      {"value": result.trip_odometer, "serie": result.serie});
+    insert("trip_odometer",      {"value": trip_odometer_adjusted, "serie": result.serie});
 
     // Tago Analysis
     insert("id",    {"value": result.id});
